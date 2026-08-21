@@ -1,10 +1,10 @@
-﻿namespace BikeStore.Models
+namespace BikeStore.Models
 {
     public class Venta
     {
         public int IdVenta { get; set; }
 
-        public DateTime Fecha { get; set; }
+        public DateTime Fecha { get; set; } = DateTime.Now;
 
         public int IdCliente { get; set; }
 

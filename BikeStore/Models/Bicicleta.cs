@@ -1,4 +1,4 @@
-﻿namespace BikeStore.Models
+namespace BikeStore.Models
 {
     public class Bicicleta
     {
