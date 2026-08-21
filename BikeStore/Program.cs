@@ -1,8 +1,15 @@
 using BikeStore.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+using BikeStore.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<IBicicletaService, BicicletaService>();
+builder.Services.AddScoped<IVentaService, VentaService>();
 
 builder.Services.AddDbContext<BikeStoreDbContext>(options =>
     options.UseSqlServer(
@@ -15,6 +22,12 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 
+builder.Services.AddCors(options =>
+   {
+    options.AddPolicy("AllowAll", policy =>
+    policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+   });
+
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -22,9 +35,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
 
