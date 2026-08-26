@@ -146,9 +146,23 @@ namespace BikeStore.Controllers
                 return BadRequest("La categoria especificada no existe");
             }
 
+            if (bicicleta.Stock < 0)
+            {
+                return BadRequest("El stock no puede ser negativo");
+            }
+
+            if (bicicleta.Precio < 0)
+            {
+                return BadRequest("El precio no puede ser negativo");
+            }
+
             if (bicicleta.Stock == 0)
             {
                 bicicleta.Estado = "Agotado";
+            }
+            else if (bicicleta.Estado == "Agotado")
+            {
+                bicicleta.Estado = "Disponible";
             }
 
             _context.Entry(bicicleta).State = EntityState.Modified;

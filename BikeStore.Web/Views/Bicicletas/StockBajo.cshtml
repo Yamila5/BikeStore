@@ -1,0 +1,2 @@
+@model IEnumerable<BicicletaDto>
+<h1>Bicicletas con stock bajo</h1><table class="table bg-white"><thead><tr><th>Bicicleta</th><th>Stock</th><th>Estado</th></tr></thead><tbody>@foreach(var x in Model){<tr><td>@x.Marca @x.Modelo</td><td>@x.Stock</td><td>@x.Estado</td></tr>}</tbody></table><a class="btn btn-secondary" asp-action="Index">Volver</a>

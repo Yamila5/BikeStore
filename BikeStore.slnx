@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="BikeStore/BikeStore.csproj" />
+  <Project Path="BikeStore.Web/BikeStore.Web.csproj" />
 </Solution>
