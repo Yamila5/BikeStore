@@ -37,9 +37,27 @@ public class BikeStoreApiClient(HttpClient http)
             using var request = new HttpRequestMessage(method, url);
             if (body is not null) request.Content = JsonContent.Create(body);
             using var response = await http.SendAsync(request);
-            var message = response.IsSuccessStatusCode ? null : await response.Content.ReadAsStringAsync();
-            var data = response.Content.Headers.ContentLength > 0 ? await response.Content.ReadFromJsonAsync<T>() : default;
-            return new ApiResult<T>(response.IsSuccessStatusCode, data, message, response.StatusCode);
+            
+            var contentString = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                return new ApiResult<T>(false, default, contentString, response.StatusCode);
+            }
+
+            T? data = default;
+            if (!string.IsNullOrWhiteSpace(contentString) && response.Content.Headers.ContentType?.MediaType == "application/json")
+            {
+                try
+                {
+                    data = System.Text.Json.JsonSerializer.Deserialize<T>(contentString, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    data = default;
+                }
+            }
+
+            return new ApiResult<T>(true, data, null, response.StatusCode);
         }
         catch (HttpRequestException)
         {
