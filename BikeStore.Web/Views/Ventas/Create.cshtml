@@ -1,3 +1,88 @@
 @model VentaDto
-@{ var clientes = ViewBag.Clientes as List<ClienteDto> ?? []; var bicicletas = ViewBag.Bicicletas as List<BicicletaDto> ?? []; }
-<h1>Registrar venta</h1><form method="post" class="card card-body bg-white"><div asp-validation-summary="ModelOnly" class="text-danger"></div><div class="mb-3"><label asp-for="IdCliente" class="form-label">Cliente</label><select asp-for="IdCliente" class="form-select"><option value="">Seleccione un cliente</option>@foreach(var c in clientes){<option value="@c.IdCliente">@c.Nombres @c.Apellidos — @c.Cedula</option>}</select></div><h5>Productos</h5><p class="text-muted">Registre de uno a tres productos. El precio 0 toma el precio vigente de la bicicleta.</p>@for(var i=0;i<3;i++){var item = i < Model.Detalles.Count ? Model.Detalles[i] : new DetalleVentaDto { Cantidad=1 };<div class="row g-2 mb-2 border-bottom pb-2"><div class="col-md-6"><select name="Detalles[@i].IdBicicleta" class="form-select"><option value="0">Seleccione bicicleta</option>@foreach(var b in bicicletas){<option value="@b.IdBicicleta" selected="@(item.IdBicicleta == b.IdBicicleta)">@b.Marca @b.Modelo — Stock: @b.Stock — $@b.Precio</option>}</select></div><div class="col-md-3"><input name="Detalles[@i].Cantidad" class="form-control" value="@item.Cantidad" type="number" min="1" placeholder="Cantidad" /></div><div class="col-md-3"><input name="Detalles[@i].Precio" class="form-control" value="@item.Precio" type="number" min="0" step="0.01" placeholder="Precio (0=actual)" /></div></div>}<button class="btn btn-success mt-3">Registrar venta</button> <a class="btn btn-secondary mt-3" asp-action="Index">Cancelar</a></form>
+@{
+    ViewData["Title"] = "Registrar Venta";
+    var clientes = ViewBag.Clientes as List<ClienteDto> ?? [];
+    var bicicletas = ViewBag.Bicicletas as List<BicicletaDto> ?? [];
+}
+
+<h1 class="mb-4">Registrar Venta</h1>
+
+<form method="post" class="card card-body bg-white shadow-sm">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="mb-4">
+        <label asp-for="IdCliente" class="form-label fw-bold">Cliente</label>
+        <select asp-for="IdCliente" class="form-select form-select-lg" required>
+            <option value="">-- Seleccione un cliente --</option>
+            @foreach (var c in clientes)
+            {
+                <option value="@c.IdCliente">@c.Nombres @c.Apellidos — Cédula: @c.Cedula</option>
+            }
+        </select>
+    </div>
+
+    <h5 class="fw-bold mb-2">Productos a Vender</h5>
+    <p class="text-muted small mb-3">Seleccione hasta 3 productos. El precio unitario se asigna automáticamente desde el catálogo oficial.</p>
+
+    @for (var i = 0; i < 3; i++)
+    {
+        var item = i < Model.Detalles.Count ? Model.Detalles[i] : new DetalleVentaDto { Cantidad = 1 };
+        <div class="row g-3 mb-3 align-items-center border-bottom pb-3 producto-row" data-index="@i">
+            <div class="col-md-7">
+                <label class="form-label small text-muted">Bicicleta #@(i + 1)</label>
+                <select name="Detalles[@i].IdBicicleta" class="form-select bicicleta-select">
+                    <option value="0" data-precio="0">-- Seleccionar bicicleta --</option>
+                    @foreach (var b in bicicletas)
+                    {
+                        <option value="@b.IdBicicleta" 
+                                data-precio="@b.Precio" 
+                                selected="@(item.IdBicicleta == b.IdBicicleta)">
+                            @b.Marca @b.Modelo — (Stock: @b.Stock) — $@b.Precio.ToString("N2")
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted">Cantidad</label>
+                <input name="Detalles[@i].Cantidad" class="form-control cantidad-input" value="@item.Cantidad" type="number" min="1" />
+            </div>
+            <div class="col-md-3 text-end pt-3">
+                <span class="text-muted small">Precio Unitario:</span> <strong class="precio-label">$0.00</strong><br />
+                <span class="text-muted small">Subtotal:</span> <strong class="subtotal-label text-success">$0.00</strong>
+            </div>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
+        <a class="btn btn-secondary" asp-action="Index">Cancelar</a>
+        <button type="submit" class="btn btn-success btn-lg">Registrar Venta</button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const rows = document.querySelectorAll('.producto-row');
+            rows.forEach(row => {
+                const select = row.querySelector('.bicicleta-select');
+                const cantidadInput = row.querySelector('.cantidad-input');
+                const precioLabel = row.querySelector('.precio-label');
+                const subtotalLabel = row.querySelector('.subtotal-label');
+
+                function updateRow() {
+                    const selectedOption = select.options[select.selectedIndex];
+                    const precio = parseFloat(selectedOption.getAttribute('data-precio')) || 0;
+                    const cantidad = parseInt(cantidadInput.value) || 1;
+                    const subtotal = precio * cantidad;
+
+                    precioLabel.textContent = '$' + precio.toFixed(2);
+                    subtotalLabel.textContent = '$' + subtotal.toFixed(2);
+                }
+
+                select.addEventListener('change', updateRow);
+                cantidadInput.addEventListener('input', updateRow);
+                updateRow();
+            });
+        });
+    </script>
+}

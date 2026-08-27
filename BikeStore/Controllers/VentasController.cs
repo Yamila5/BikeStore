@@ -96,10 +96,8 @@ namespace BikeStore.Controllers
                         return BadRequest($"Stock insuficiente para {bicicleta.Marca} {bicicleta.Modelo}. Disponible: {bicicleta.Stock}, Solicitado: {detalle.Cantidad}");
                     }
 
-                    if (detalle.Precio <= 0)
-                    {
-                        detalle.Precio = bicicleta.Precio;
-                    }
+                    // Forzar siempre el precio oficial de la bicicleta según el catálogo de la base de datos
+                    detalle.Precio = bicicleta.Precio;
 
                     detalle.Subtotal = detalle.Cantidad * detalle.Precio;
                     subtotalVenta += detalle.Subtotal;
